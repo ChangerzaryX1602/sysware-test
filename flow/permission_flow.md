@@ -1,41 +1,78 @@
 ```mermaid
 sequenceDiagram
     participant Client
-    participant MW as Middleware (ReqAuthPerms)
+    participant MW as Middleware
     participant H as Permission Handler
     participant S as Permission Service
     participant R as Permission Repository
     participant DB as MainDbConn
 
-    note over Client, DB: Create Permission Flow
-    Client->>MW: POST /permissions (Bearer Token)
-    MW->>MW: Validate Token & Check Permissions
-    alt Unauthorized
-        MW-->>Client: 403 Forbidden
-    else Authorized
-        MW->>H: CreatePermission(Ctx)
-        H->>H: BodyParser(permission)
-        H->>S: CreatePermission(permission)
-        S->>R: CreatePermission(permission)
-        R->>DB: INSERT INTO permissions ...
-        DB-->>R: Result
-        R-->>S: nil (Success)
-        S-->>H: nil
-        H-->>Client: 201 Created {data}
-    end
+    note over Client, DB: Create Permission
+    Client->>MW: POST /permissions
+    MW->>MW: Check Permissions (Create)
+    MW->>H: CreatePermission()
+    H->>S: CreatePermission()
+    S->>R: CreatePermission()
+    R->>DB: Insert
+    DB-->>R: Result
+    R-->>S: nil
+    S-->>H: nil
+    H-->>Client: 201 Created
 
-    note over Client, DB: Get Permissions (List) Flow
-    Client->>MW: GET /permissions?page=1...
-    MW->>MW: Validate Token & Check Permissions
-    alt Authorized
-        MW->>H: GetPermissions(Ctx)
-        H->>H: QueryParser(Pagination, Search)
-        H->>S: GetPermissions(page, search)
-        S->>R: GetPermissions(page, search)
-        R->>DB: SELECT * FROM permissions ...
-        DB-->>R: Rows
-        R-->>S: []Permissions
-        S-->>H: []Permissions
-        H-->>Client: 200 OK {data, meta}
-    end
+    note over Client, DB: Get My Permissions
+    Client->>MW: GET /permissions/me
+    MW->>MW: Check Permissions (Me)
+    MW->>H: GetMyPermissions()
+    H->>H: ExtractPerms(userId)
+    H->>DB: Join Queries
+    DB-->>H: Permissions
+    H-->>Client: 200 OK
+
+    note over Client, DB: Get Permission (ID)
+    Client->>MW: GET /permissions/:id
+    MW->>MW: Check Permissions (Read)
+    MW->>H: GetPermission()
+    H->>S: GetPermission()
+    S->>R: GetPermission()
+    R->>DB: Select
+    DB-->>R: Permission
+    R-->>S: Permission
+    S-->>H: Permission
+    H-->>Client: 200 OK
+
+    note over Client, DB: Get Permissions (List)
+    Client->>MW: GET /permissions
+    MW->>MW: Check Permissions (List)
+    MW->>H: GetPermissions()
+    H->>S: GetPermissions()
+    S->>R: GetPermissions()
+    R->>DB: Select List
+    DB-->>R: Permissions
+    R-->>S: Permissions
+    S-->>H: Permissions
+    H-->>Client: 200 OK
+
+    note over Client, DB: Update Permission
+    Client->>MW: PUT /permissions/:id
+    MW->>MW: Check Permissions (Update)
+    MW->>H: UpdatePermission()
+    H->>S: UpdatePermission()
+    S->>R: UpdatePermission()
+    R->>DB: Update
+    DB-->>R: Result
+    R-->>S: nil
+    S-->>H: nil
+    H-->>Client: 200 OK
+
+    note over Client, DB: Delete Permission
+    Client->>MW: DELETE /permissions/:id
+    MW->>MW: Check Permissions (Delete)
+    MW->>H: DeletePermission()
+    H->>S: DeletePermission()
+    S->>R: DeletePermission()
+    R->>DB: Delete
+    DB-->>R: Result
+    R-->>S: nil
+    S-->>H: nil
+    H-->>Client: 200 OK
 ```

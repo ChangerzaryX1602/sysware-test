@@ -7,34 +7,53 @@ sequenceDiagram
     participant R as Role Repository
     participant DB as MainDbConn
 
-    note over Client, DB: Create Role Flow
-    Client->>MW: POST /roles (Bearer Token)
-    MW->>MW: Check Permissions (Create)
-    alt Authorized
-        MW->>H: CreateRole(Ctx)
-        H->>H: BodyParser(role)
-        H->>S: CreateRole(role)
-        S->>R: CreateRole(role)
-        R->>DB: INSERT INTO roles ...
-        DB-->>R: Result
-        R-->>S: nil
-        S-->>H: nil
-        H-->>Client: 201 Created
-    else Unauthorized
-        MW-->>Client: 403 Forbidden
-    end
+    note over Client, DB: Create Role
+    Client->>MW: POST /roles (Create)
+    MW->>H: CreateRole()
+    H->>S: CreateRole()
+    S->>R: CreateRole()
+    R->>DB: Insert
+    DB-->>R: Result
+    R-->>H: Result
+    H-->>Client: 201 Created
 
-    note over Client, DB: Get Roles (List) Flow
-    Client->>MW: GET /roles?page=1...
-    MW->>MW: Check Permissions (List)
-    alt Authorized
-        MW->>H: GetRoles(Ctx)
-        H->>S: GetRoles(page, search)
-        S->>R: GetRoles(page, search)
-        R->>DB: SELECT * FROM roles ...
-        DB-->>R: []Roles
-        R-->>S: []Roles
-        S-->>H: []Roles
-        H-->>Client: 200 OK
-    end
+    note over Client, DB: Get Role (ID)
+    Client->>MW: GET /roles/:id (Read)
+    MW->>H: GetRole()
+    H->>S: GetRole()
+    S->>R: GetRole()
+    R->>DB: Select
+    DB-->>R: Role
+    R-->>H: Role
+    H-->>Client: 200 OK
+
+    note over Client, DB: Get Roles (List)
+    Client->>MW: GET /roles (List)
+    MW->>H: GetRoles()
+    H->>S: GetRoles()
+    S->>R: GetRoles()
+    R->>DB: Select
+    DB-->>R: Roles
+    R-->>H: Roles
+    H-->>Client: 200 OK
+
+    note over Client, DB: Update Role
+    Client->>MW: PUT /roles/:id (Update)
+    MW->>H: UpdateRole()
+    H->>S: UpdateRole()
+    S->>R: UpdateRole()
+    R->>DB: Update
+    DB-->>R: Result
+    R-->>H: Result
+    H-->>Client: 200 OK
+
+    note over Client, DB: Delete Role
+    Client->>MW: DELETE /roles/:id (Delete)
+    MW->>H: DeleteRole()
+    H->>S: DeleteRole()
+    S->>R: DeleteRole()
+    R->>DB: Delete
+    DB-->>R: Result
+    R-->>H: Result
+    H-->>Client: 200 OK
 ```
