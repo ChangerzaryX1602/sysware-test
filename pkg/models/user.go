@@ -11,8 +11,8 @@ type User struct {
 	ID           uint           `json:"id" gorm:"primaryKey;autoIncrement;index" swaggerignore:"true"`
 	Username     string         `json:"username" gorm:"unique;not null"`
 	Email        string         `json:"email" gorm:"unique;not null"`
-	Password     string         `json:"-" gorm:"not null"`
-	PasswordTemp string         `json:"password" gorm:"-"`
+	Password     string         `json:"-" gorm:"not null" query:"-"`
+	PasswordTemp string         `json:"password" gorm:"-" query:"-"`
 	CreatedAt    time.Time      `json:"created_at" gorm:"autoCreateTime" swaggerignore:"true"`
 	UpdatedAt    time.Time      `json:"updated_at" gorm:"autoUpdateTime" swaggerignore:"true"`
 	DeletedAt    gorm.DeletedAt `json:"deleted_at,omitempty" gorm:"index" swaggerignore:"true"`
